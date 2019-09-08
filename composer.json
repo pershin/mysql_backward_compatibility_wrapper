@@ -1,0 +1,15 @@
+{
+    "name": "pershin/mysql_backward_compatibility_wrapper",
+    "description": "MySQL Backward Compatibility Wrapper",
+    "version": "1.0.0-dev",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Sergey Pershin",
+            "email": "sergey.pershin@hotmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {}
+}
