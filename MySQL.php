@@ -225,7 +225,16 @@ function mysql_fetch_assoc($result) {
     return mysql_fetch_array($result, MYSQL_ASSOC);
 }
 
-//mysql_fetch_field - Get column information from a result and return as an object
+/**
+ * Get column information from a result and return as an object
+ */
+function mysql_fetch_field($result, $field_offset = 0) {
+    if (0 < $field_offset) {
+        mysql_field_seek($result, $field_offset);
+    }
+
+    return mysqli_fetch_field($result);
+}
 
 /**
  * Get the length of each output in a result
@@ -252,7 +261,20 @@ function mysql_fetch_row($result) {
     return mysqli_fetch_row($result);
 }
 
-//mysql_field_flags - Get the flags associated with the specified field in a result
+/**
+ * Get the flags associated with the specified field in a result
+ */
+function mysql_field_flags($result, $field_offset) {
+    $object = mysqli_fetch_field_direct($result, $field_offset);
+    return $object ? $object->flags : false;
+}
+
+/**
+ * For backward compatibility, the following deprecated alias may be used: <b>mysql_fieldflags()</b>
+ */
+function mysql_fieldflags($result, $field_offset) {
+    return mysql_field_flags($result, $field_offset);
+}
 
 /**
  * Returns the length of the specified field
@@ -284,7 +306,12 @@ function mysql_fieldname($result, $field_offset) {
     return mysql_field_name($result, $field_offset);
 }
 
-//mysql_field_seek - Set result pointer to a specified field offset
+/**
+ * Set result pointer to a specified field offset
+ */
+function mysql_field_seek($result, $field_offset) {
+    return mysqli_field_seek($result, $field_offset);
+}
 
 /**
  * Get name of the table the specified field is in
@@ -359,6 +386,13 @@ function mysql_free_result($result) {
 }
 
 /**
+ * For backward compatibility, the following deprecated alias may be used: <b>mysql_freeresult()</b>
+ */
+function mysql_freeresult($result) {
+    return mysql_free_result($result);
+}
+
+/**
  * Get MySQL client info
  */
 function mysql_get_client_info() {
@@ -389,7 +423,13 @@ function mysql_get_server_info($link_identifier = null) {
     return mysqli_get_server_info($link);
 }
 
-//mysql_info - Get information about the most recent query
+/**
+ * Get information about the most recent query
+ */
+function mysql_info($link_identifier = null) {
+    $link = mysql_get_link_identifier($link_identifier);
+    return mysqli_info($link);
+}
 
 /**
  * Get the ID generated in the last query
@@ -414,7 +454,21 @@ function mysql_listdbs($link_identifier = null) {
     return mysql_list_dbs($link_identifier);
 }
 
-//mysql_list_fields - List MySQL table fields
+/**
+ * List MySQL table fields
+ */
+function mysql_list_fields($database_name, $table_name, $link_identifier = null) {
+    $db_name = mysql_real_escape_string($database_name, $link_identifier);
+    $tbl_name = mysql_real_escape_string($table_name, $link_identifier);
+    return mysql_query("SHOW COLUMNS FROM `{$db_name}`.`{$tbl_name}`", $link_identifier);
+}
+
+/**
+ * For backward compatibility, the following deprecated alias may be used: <b>mysql_listfields()</b>
+ */
+function mysql_listfields($database_name, $table_name, $link_identifier = null) {
+    return mysql_list_fields($database_name, $table_name, $link_identifier);
+}
 
 /**
  * List MySQL processes
@@ -468,7 +522,13 @@ function mysql_numrows($result) {
     return mysql_num_rows($result);
 }
 
-//mysql_pconnect - Open a persistent connection to a MySQL server
+/**
+ * Open a persistent connection to a MySQL server
+ */
+function mysql_pconnect($server, $username, $password, $client_flags = 0) {
+    $server = 'p:' . $server;
+    return mysql_connect($server, $username, $password, false, $client_flags);
+}
 
 /**
  * Ping a server connection or reconnect if there is no connection
@@ -521,6 +581,13 @@ function mysql_result($result, $row, $field = 0) {
 function mysql_select_db($database_name, $link_identifier = null) {
     $link = mysql_get_link_identifier($link_identifier);
     return mysqli_select_db($link, $database_name);
+}
+
+/**
+ * For backward compatibility, the following deprecated alias may be used: <b>mysql_selectdb()</b>
+ */
+function mysql_selectdb($database_name, $link_identifier = null) {
+    return mysql_select_db($database_name, $link_identifier);
 }
 
 /**
