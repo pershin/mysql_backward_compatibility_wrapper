@@ -19,7 +19,5 @@ composer require pershin/mysql_backward_compatibility_wrapper
 In your PHP script:
 
 ```php
-if (!function_exists('mysql_connect')) {
-    include 'vendor/pershin/mysql_backward_compatibility_wrapper/MySQL.php';
-}
+include 'vendor/pershin/mysql_backward_compatibility_wrapper/autoload.php';
 ```

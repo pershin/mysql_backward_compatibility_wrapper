@@ -24,19 +24,9 @@
  * THE SOFTWARE.
  */
 
-namespace vendor\pershin\mysql_backward_compatibility_wrapper {
-
-    final class MySQL {
-
-        /**
-         * The MySQL connection.
-         */
-        public static $link = null;
-
-        public static function getLinkIdentifier($link_identifier = null) {
-            return null === $link_identifier ? self::$link : $link_identifier;
-        }
-
-    }
-
+if (!function_exists('mysql_connect')) {
+    require __DIR__ . DIRECTORY_SEPARATOR . 'constants.php';
+    require __DIR__ . DIRECTORY_SEPARATOR . 'MySQL.php';
+    require __DIR__ . DIRECTORY_SEPARATOR . 'functions.php';
+    require __DIR__ . DIRECTORY_SEPARATOR . 'aliases.php';
 }
