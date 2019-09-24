@@ -94,7 +94,7 @@ function mysql_drop_db($database_name, $link_identifier = null) {
  */
 function mysql_query($query, $link_identifier = null) {
     $link = MySQL::getLinkIdentifier($link_identifier);
-    return mysqli_query($link, $query);
+    return MySQL::query($query, $link);
 }
 
 /**
@@ -102,7 +102,7 @@ function mysql_query($query, $link_identifier = null) {
  */
 function mysql_unbuffered_query($query, $link_identifier = null) {
     $link = MySQL::getLinkIdentifier($link_identifier);
-    return mysqli_query($link, $query, MYSQLI_USE_RESULT);
+    return MySQL::query($query, $link, true);
 }
 
 /**
@@ -238,10 +238,12 @@ function mysql_fetch_assoc($result) {
  */
 function mysql_fetch_object($result, $class_name = 'stdClass', $params = []) {
     if (empty($params)) {
-        return mysqli_fetch_object($result, $class_name);
+        $obj = mysqli_fetch_object($result, $class_name);
+    } else {
+        $obj = mysqli_fetch_object($result, $class_name, $params);
     }
 
-    return mysqli_fetch_object($result, $class_name, $params);
+    return null !== $obj ? $obj : false;
 }
 
 /**
