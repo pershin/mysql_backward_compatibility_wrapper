@@ -50,6 +50,98 @@ namespace vendor\pershin\mysql_backward_compatibility_wrapper {
         public static $queries = [];
 
         /**
+         * Field flags
+         *
+         * @var array
+         */
+        private static $flags = [
+            MYSQLI_NOT_NULL_FLAG => 'not_null',
+            MYSQLI_PRI_KEY_FLAG => 'primary_key',
+            MYSQLI_UNIQUE_KEY_FLAG => 'unique_key',
+            MYSQLI_MULTIPLE_KEY_FLAG => 'multiple_key',
+            MYSQLI_BLOB_FLAG => 'blob',
+            MYSQLI_UNSIGNED_FLAG => 'unsigned',
+            MYSQLI_ZEROFILL_FLAG => 'zerofill',
+            MYSQLI_AUTO_INCREMENT_FLAG => 'auto_increment',
+            MYSQLI_TIMESTAMP_FLAG => 'timestamp',
+            MYSQLI_SET_FLAG => 'set',
+            MYSQLI_NUM_FLAG => '',
+            MYSQLI_PART_KEY_FLAG => '',
+            MYSQLI_GROUP_FLAG => '',
+            MYSQLI_ENUM_FLAG => 'enum',
+            MYSQLI_BINARY_FLAG => 'binary',
+            MYSQLI_NO_DEFAULT_VALUE_FLAG => '',
+            MYSQLI_ON_UPDATE_NOW_FLAG => ''
+        ];
+
+        /**
+         * Field types
+         *
+         * @var array
+         */
+        private static $types = [
+            MYSQLI_TYPE_DECIMAL => 'real',
+            MYSQLI_TYPE_TINY => 'int',
+            MYSQLI_TYPE_SHORT => 'int',
+            MYSQLI_TYPE_LONG => 'int',
+            MYSQLI_TYPE_FLOAT => 'real',
+            MYSQLI_TYPE_DOUBLE => 'real',
+            MYSQLI_TYPE_NULL => 'null',
+            MYSQLI_TYPE_TIMESTAMP => 'timestamp',
+            MYSQLI_TYPE_LONGLONG => 'int',
+            MYSQLI_TYPE_INT24 => 'int',
+            MYSQLI_TYPE_DATE => 'date',
+            MYSQLI_TYPE_TIME => 'time',
+            MYSQLI_TYPE_DATETIME => 'datetime',
+            MYSQLI_TYPE_YEAR => 'year',
+            MYSQLI_TYPE_NEWDATE => 'date',
+            MYSQLI_TYPE_ENUM => 'enum',
+            MYSQLI_TYPE_SET => 'set',
+            MYSQLI_TYPE_TINY_BLOB => 'blob',
+            MYSQLI_TYPE_MEDIUM_BLOB => 'blob',
+            MYSQLI_TYPE_LONG_BLOB => 'blob',
+            MYSQLI_TYPE_BLOB => 'blob',
+            MYSQLI_TYPE_VAR_STRING => 'string',
+            MYSQLI_TYPE_STRING => 'string',
+            //MYSQLI_TYPE_CHAR => '',
+            //MYSQLI_TYPE_INTERVAL => '',
+            MYSQLI_TYPE_GEOMETRY => 'geometry',
+            //MYSQLI_TYPE_JSON => '',
+            MYSQLI_TYPE_NEWDECIMAL => 'real',
+            MYSQLI_TYPE_BIT => 'int'
+        ];
+
+        /**
+         * Get the flags associated with the field
+         *
+         * @param int $flags
+         *
+         * @return string
+         */
+        public static function getFieldFlags(int $flags): string {
+            $str = '';
+
+            foreach (self::$flags as $key => $val) {
+                if ($key & $flags) {
+                    $str .= $val . ' ';
+                }
+            }
+
+            return rtrim($str);
+        }
+
+        /**
+         * Get the type of the field
+         *
+         * @param int $field_type
+         *
+         * @return string
+         */
+        public static function getFieldType(int $field_type): string {
+            return self::$types[$field_type] ?? 'unknown';
+        }
+
+        /**
          * Gets a link identifier
          *
          * @param mixed $link_identifier

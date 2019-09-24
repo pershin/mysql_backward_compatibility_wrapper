@@ -264,11 +264,29 @@ function mysql_fetch_lengths($result) {
  * Get column information from a result and return as an object
  */
 function mysql_fetch_field($result, $field_offset = 0) {
-    if (0 < $field_offset) {
-        mysql_field_seek($result, $field_offset);
+    mysql_field_seek($result, $field_offset);
+
+    $finfo = mysqli_fetch_field($result);
+
+    if ($finfo) {
+        $obj = new stdClass;
+
+        $obj->name = $finfo->name;
+        $obj->table = $finfo->table;
+        $obj->def = '';
+        $obj->max_length = $finfo->max_length;
+        $obj->not_null = MYSQLI_NOT_NULL_FLAG & $finfo->flags ? 1 : 0;
+        $obj->primary_key = MYSQLI_PRI_KEY_FLAG & $finfo->flags ? 1 : 0;
+        $obj->multiple_key = MYSQLI_MULTIPLE_KEY_FLAG & $finfo->flags ? 1 : 0;
+        $obj->unique_key = MYSQLI_UNIQUE_KEY_FLAG & $finfo->flags ? 1 : 0;
+        $obj->numeric = MYSQLI_NUM_FLAG & $finfo->flags ? 1 : 0;
+        $obj->blob = MYSQLI_BLOB_FLAG & $finfo->flags ? 1 : 0;
+        $obj->type = MySQL::getFieldType($finfo->type);
+        $obj->unsigned = MYSQLI_UNSIGNED_FLAG & $finfo->flags ? 1 : 0;
+        $obj->zerofill = MYSQLI_ZEROFILL_FLAG & $finfo->flags ? 1 : 0;
     }
 
-    return mysqli_fetch_field($result);
+    return $obj ?? false;
 }
 
 /**
@@ -290,60 +308,40 @@ function mysql_free_result($result) {
  * Get the name of the specified field in a result
  */
 function mysql_field_name($result, $field_offset) {
-    $object = mysqli_fetch_field_direct($result, $field_offset);
-    return $object ? $object->name : false;
+    $obj = mysql_fetch_field($result, $field_offset);
+    return $obj ? $obj->name : false;
 }
 
 /**
  * Get name of the table the specified field is in
  */
 function mysql_field_table($result, $field_offset) {
-    $object = mysqli_fetch_field_direct($result, $field_offset);
-    return $object ? $object->table : false;
+    $obj = mysql_fetch_field($result, $field_offset);
+    return $obj ? $obj->table : false;
 }
 
 /**
  * Returns the length of the specified field
  */
 function mysql_field_len($result, $field_offset) {
-    $object = mysqli_fetch_field_direct($result, $field_offset);
-    return $object ? $object->length : false;
+    $obj = mysqli_fetch_field_direct($result, $field_offset);
+    return $obj ? $obj->length : false;
 }
 
 /**
  * Get the type of the specified field in a result
  */
 function mysql_field_type($result, $field_offset) {
-    $object = mysqli_fetch_field_direct($result, $field_offset);
-    $type = $object ? $object->type : false;
-
-    $types = [
-        MYSQLI_TYPE_DECIMAL,
-        MYSQLI_TYPE_TINY => 'int', MYSQLI_TYPE_SHORT => 'int',
-        MYSQLI_TYPE_LONG => 'int', MYSQLI_TYPE_FLOAT => 'real',
-        MYSQLI_TYPE_DOUBLE, MYSQLI_TYPE_NULL,
-        MYSQLI_TYPE_TIMESTAMP => 'timestamp', MYSQLI_TYPE_LONGLONG,
-        MYSQLI_TYPE_INT24 => 'int', MYSQLI_TYPE_DATE,
-        MYSQLI_TYPE_TIME => 'time', MYSQLI_TYPE_DATETIME => 'datetime',
-        MYSQLI_TYPE_YEAR, MYSQLI_TYPE_NEWDATE,
-        MYSQLI_TYPE_ENUM, MYSQLI_TYPE_SET,
-        MYSQLI_TYPE_TINY_BLOB, MYSQLI_TYPE_MEDIUM_BLOB,
-        MYSQLI_TYPE_LONG_BLOB, MYSQLI_TYPE_BLOB => 'blob',
-        MYSQLI_TYPE_VAR_STRING => 'string', MYSQLI_TYPE_STRING => 'string',
-        MYSQLI_TYPE_CHAR, MYSQLI_TYPE_INTERVAL,
-        MYSQLI_TYPE_GEOMETRY, MYSQLI_TYPE_JSON,
-        MYSQLI_TYPE_NEWDECIMAL, MYSQLI_TYPE_BIT
-    ];
-
-    return $types[$type] ?? false;
+    $obj = mysql_fetch_field($result, $field_offset);
+    return $obj ? $obj->type : false;
 }
 
 /**
  * Get the flags associated with the specified field in a result
  */
 function mysql_field_flags($result, $field_offset) {
-    $object = mysqli_fetch_field_direct($result, $field_offset);
-    return $object ? $object->flags : false;
+    $obj = mysqli_fetch_field_direct($result, $field_offset);
+    return $obj ? MySQL::getFieldFlags($obj->flags) : false;
 }
 
 /**
