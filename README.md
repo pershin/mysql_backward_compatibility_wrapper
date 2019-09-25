@@ -1,6 +1,6 @@
 # MySQL Backward Compatibility Wrapper
 
-All mysql_* functions in PHP 7 with debug mode
+All mysql_* functions in PHP 7 with debug mode.
 
 REQUIREMENTS
 ------------
