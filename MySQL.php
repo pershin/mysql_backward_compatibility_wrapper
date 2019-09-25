@@ -149,6 +149,10 @@ namespace vendor\pershin\mysql_backward_compatibility_wrapper {
          * @return null|\mysqli
          */
         public static function getLinkIdentifier($link_identifier = null) {
+            if ($link_identifier) {
+                $link_identifier = Resource::fetch($link_identifier);
+            }
+
             return null === $link_identifier ? self::$link : $link_identifier;
         }
 

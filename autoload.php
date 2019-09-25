@@ -26,6 +26,7 @@
 
 if (!function_exists('mysql_connect')) {
     require __DIR__ . DIRECTORY_SEPARATOR . 'constants.php';
+    require __DIR__ . DIRECTORY_SEPARATOR . 'Resource.php';
     require __DIR__ . DIRECTORY_SEPARATOR . 'MySQL.php';
     require __DIR__ . DIRECTORY_SEPARATOR . 'functions.php';
     require __DIR__ . DIRECTORY_SEPARATOR . 'aliases.php';

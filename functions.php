@@ -24,7 +24,10 @@
  * THE SOFTWARE.
  */
 
-use vendor\pershin\mysql_backward_compatibility_wrapper\MySQL;
+use vendor\pershin\mysql_backward_compatibility_wrapper\{
+    MySQL,
+    Resource
+};
 
 /**
  * Open a connection to a MySQL Server
@@ -35,9 +38,12 @@ function mysql_connect($server = null, $username = null, $password = null, $new_
     }
 
     MySQL::$link = mysqli_init();
-    MySQL::$link->real_connect($server, $username, $password, null, null, null, $client_flags);
 
-    return MySQL::$link;
+    if (MySQL::$link->real_connect($server, $username, $password, null, null, null, $client_flags)) {
+        $resource = Resource::create(MySQL::$link, Resource::TYPE_MYSQL_LINK);
+    }
+
+    return $resource ?? false;
 }
 
 /**
@@ -50,7 +56,13 @@ function mysql_pconnect($server = null, $username = null, $password = null, $cli
         $server = 'p:' . $server;
     }
 
-    return mysql_connect($server, $username, $password, false, $client_flags);
+    MySQL::$link = mysqli_init();
+
+    if (MySQL::$link->real_connect($server, $username, $password, null, null, null, $client_flags)) {
+        $resource = Resource::create(MySQL::$link, Resource::TYPE_MYSQL_LINK_PERSISTENT);
+    }
+
+    return $resource ?? false;
 }
 
 /**
@@ -94,7 +106,13 @@ function mysql_drop_db($database_name, $link_identifier = null) {
  */
 function mysql_query($query, $link_identifier = null) {
     $link = MySQL::getLinkIdentifier($link_identifier);
-    return MySQL::query($query, $link);
+    $result = MySQL::query($query, $link);
+
+    if ($result) {
+        $resource = Resource::create($result, Resource::TYPE_MYSQL_RESULT);
+    }
+
+    return $resource ?? false;
 }
 
 /**
@@ -102,7 +120,13 @@ function mysql_query($query, $link_identifier = null) {
  */
 function mysql_unbuffered_query($query, $link_identifier = null) {
     $link = MySQL::getLinkIdentifier($link_identifier);
-    return MySQL::query($query, $link, true);
+    $result = MySQL::query($query, $link, true);
+
+    if ($result) {
+        $resource = Resource::create($result, Resource::TYPE_MYSQL_RESULT);
+    }
+
+    return $resource ?? false;
 }
 
 /**
@@ -202,28 +226,32 @@ function mysql_result($result, $row, $field = 0) {
  * Get number of rows in result
  */
 function mysql_num_rows($result) {
-    return mysqli_num_rows($result);
+    $mysqli_result = Resource::fetch($result);
+    return mysqli_num_rows($mysqli_result);
 }
 
 /**
  * Get number of fields in result
  */
 function mysql_num_fields($result) {
-    return mysqli_num_fields($result);
+    $mysqli_result = Resource::fetch($result);
+    return mysqli_num_fields($mysqli_result);
 }
 
 /**
  * Get a result row as an enumerated array
  */
 function mysql_fetch_row($result) {
-    return mysqli_fetch_row($result);
+    $mysqli_result = Resource::fetch($result);
+    return mysqli_fetch_row($mysqli_result);
 }
 
 /**
  * Fetch a result row as an associative array, a numeric array, or both
  */
 function mysql_fetch_array($result, $result_type = MYSQL_BOTH) {
-    return mysqli_fetch_array($result, $result_type);
+    $mysqli_result = Resource::fetch($result);
+    return mysqli_fetch_array($mysqli_result, $result_type);
 }
 
 /**
@@ -237,10 +265,12 @@ function mysql_fetch_assoc($result) {
  * Fetch a result row as an object
  */
 function mysql_fetch_object($result, $class_name = 'stdClass', $params = []) {
+    $mysqli_result = Resource::fetch($result);
+
     if (empty($params)) {
-        $obj = mysqli_fetch_object($result, $class_name);
+        $obj = mysqli_fetch_object($mysqli_result, $class_name);
     } else {
-        $obj = mysqli_fetch_object($result, $class_name, $params);
+        $obj = mysqli_fetch_object($mysqli_result, $class_name, $params);
     }
 
     return null !== $obj ? $obj : false;
@@ -250,23 +280,27 @@ function mysql_fetch_object($result, $class_name = 'stdClass', $params = []) {
  * Move internal result pointer
  */
 function mysql_data_seek($result, $row_number) {
-    return mysqli_data_seek($result, $row_number);
+    $mysqli_result = Resource::fetch($result);
+    return mysqli_data_seek($mysqli_result, $row_number);
 }
 
 /**
  * Get the length of each output in a result
  */
 function mysql_fetch_lengths($result) {
-    return mysqli_fetch_lengths($result);
+    $mysqli_result = Resource::fetch($result);
+    return mysqli_fetch_lengths($mysqli_result);
 }
 
 /**
  * Get column information from a result and return as an object
  */
 function mysql_fetch_field($result, $field_offset = 0) {
-    mysql_field_seek($result, $field_offset);
+    $mysqli_result = Resource::fetch($result);
 
-    $finfo = mysqli_fetch_field($result);
+    mysqli_field_seek($mysqli_result, $field_offset);
+
+    $finfo = mysqli_fetch_field($mysqli_result);
 
     if ($finfo) {
         $obj = new stdClass;
@@ -293,14 +327,17 @@ function mysql_fetch_field($result, $field_offset = 0) {
  * Set result pointer to a specified field offset
  */
 function mysql_field_seek($result, $field_offset) {
-    return mysqli_field_seek($result, $field_offset);
+    $mysqli_result = Resource::fetch($result);
+    return mysqli_field_seek($mysqli_result, $field_offset);
 }
 
 /**
  * Free result memory
  */
 function mysql_free_result($result) {
-    mysqli_free_result($result);
+    $mysqli_result = Resource::fetch($result);
+    mysqli_free_result($mysqli_result);
+    Resource::free($result);
     return true;
 }
 
@@ -324,7 +361,9 @@ function mysql_field_table($result, $field_offset) {
  * Returns the length of the specified field
  */
 function mysql_field_len($result, $field_offset) {
-    $obj = mysqli_fetch_field_direct($result, $field_offset);
+    $mysqli_result = Resource::fetch($result);
+    $obj = mysqli_fetch_field_direct($mysqli_result, $field_offset);
+
     return $obj ? $obj->length : false;
 }
 
@@ -340,7 +379,9 @@ function mysql_field_type($result, $field_offset) {
  * Get the flags associated with the specified field in a result
  */
 function mysql_field_flags($result, $field_offset) {
-    $obj = mysqli_fetch_field_direct($result, $field_offset);
+    $mysqli_result = Resource::fetch($result);
+    $obj = mysqli_fetch_field_direct($mysqli_result, $field_offset);
+
     return $obj ? MySQL::getFieldFlags($obj->flags) : false;
 }
 
